@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { getJurisdictionRequirements, validateJurisdictionCompliance } from '../../../lib/drafter/jurisdictionRules';
 
-const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY);
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 export async function POST(request) {
   try {
@@ -11,6 +11,13 @@ export async function POST(request) {
     if (!formData?.prompt) {
       return NextResponse.json(
         { success: false, error: 'Prompt is required' },
+        { status: 400 }
+      );
+    }
+
+    if (!formData?.jurisdiction || formData.jurisdiction === 'undefined' || formData.jurisdiction === 'null') {
+      return NextResponse.json(
+        { success: false, error: 'Please select a valid region/jurisdiction before generating the document' },
         { status: 400 }
       );
     }
@@ -104,7 +111,40 @@ NOW GENERATE THE DOCUMENT FOLLOWING THIS EXACT FORMAT.`;
 
     const userPrompt = `DRAFTING REQUEST: ${formData.prompt}
 
-JURISDICTION: ${formData.jurisdiction || 'US Federal'}
+JURISDICTION: ${formData.jurisdiction}
+
+CRITICAL JURISDICTION-SPECIFIC REQUIREMENTS:
+You MUST generate this legal document in accordance with the actual laws, regulations, constitution, and legal practices of ${formData.jurisdiction}. This includes:
+
+1. LEGAL FRAMEWORK COMPLIANCE:
+   - Apply the specific statutory laws and regulations of ${formData.jurisdiction}
+   - Follow the constitutional requirements applicable in this jurisdiction
+   - Include all mandatory clauses required by law in ${formData.jurisdiction}
+   - Use the legal terminology and language standard in ${formData.jurisdiction}
+
+2. JURISDICTION-SPECIFIC CLAUSES:
+   - Include jurisdiction-mandated provisions (e.g., employment law protections, consumer rights, data privacy requirements)
+   - Add required notices, disclosures, or warnings specific to ${formData.jurisdiction}
+   - Follow the statutory format requirements if any exist in this jurisdiction
+   - Include governing law and dispute resolution clauses appropriate for ${formData.jurisdiction}
+
+3. LEGAL SYSTEM CONSIDERATIONS:
+   - Adapt the document structure to match ${formData.jurisdiction}'s legal system (common law, civil law, hybrid, or religious law)
+   - Use appropriate legal precedents and references from ${formData.jurisdiction}
+   - Include all statutory requirements for contract validity in ${formData.jurisdiction}
+   - Follow local court rules and procedural requirements
+
+4. LANGUAGE AND FORMATTING:
+   - If ${formData.jurisdiction} has an official language other than English, note it but draft in English with legally appropriate terminology
+   - Use legal conventions and phrasing standard in ${formData.jurisdiction}
+   - Include any required headers, footers, or registration information
+
+5. ENFORCEABILITY:
+   - Ensure all terms are enforceable under ${formData.jurisdiction}'s laws
+   - Avoid any clauses that would be deemed illegal or void in ${formData.jurisdiction}
+   - Include severability clauses appropriate for ${formData.jurisdiction}
+
+IMPORTANT: This document must be legally valid and enforceable in ${formData.jurisdiction}. Research and apply the actual legal requirements of this jurisdiction. Do NOT use generic templates - make this jurisdiction-specific.
 
 Generate a complete legal document following the formatting rules exactly. Do NOT use quotation marks anywhere in the document except within actual quoted text.`;
 
@@ -125,24 +165,14 @@ Generate a complete legal document following the formatting rules exactly. Do NO
                         draft.toLowerCase().includes('nda') || draft.toLowerCase().includes('non-disclosure') ? 'nda' : 
                         'other';
 
-    // Validate jurisdiction compliance
-    const jurisdiction = formData.jurisdiction || 'US Federal';
+    const jurisdiction = formData.jurisdiction;
+
+    // Try to validate jurisdiction compliance for known jurisdictions
+    // For international jurisdictions, we rely on the AI's knowledge
     const compliance = validateJurisdictionCompliance(draft, jurisdiction, documentType);
 
-    // If not compliant, regenerate with missing requirements
-    if (!compliance.compliant) {
-      const missingRequirements = compliance.missingRequirements.join('\n');
-      const enhancedUserPrompt = `${userPrompt}\n\nIMPORTANT: The document MUST include the following jurisdiction-specific requirements:\n${missingRequirements}`;
-      
-      const enhancedResult = await model.generateContent([systemPrompt, enhancedUserPrompt]);
-      const enhancedResponse = await enhancedResult.response;
-      draft = enhancedResponse.text()
-        .replace(/```[\w]*\n?/g, '')
-        .replace(/^["'`]+|["'`]+$/gm, '')
-        .replace(/\*\*/g, '')
-        .replace(/##\s/g, '')
-        .trim();
-    }
+    // Note: We rely primarily on the AI's comprehensive jurisdiction-specific prompt
+    // rather than a hardcoded database of requirements for all countries
 
     return NextResponse.json({
       success: true,
@@ -152,7 +182,11 @@ Generate a complete legal document following the formatting rules exactly. Do NO
         timestamp: new Date().toISOString(),
         jurisdiction: jurisdiction,
         documentType: documentType,
-        jurisdictionCompliance: compliance
+        jurisdictionCompliance: {
+          note: 'Document generated with jurisdiction-specific AI instructions',
+          jurisdiction: jurisdiction,
+          aiInstructed: true
+        }
       }
     });
 

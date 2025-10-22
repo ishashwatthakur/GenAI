@@ -2,15 +2,13 @@ import React, { useState, useRef, useEffect } from "react";
 import { countries } from "./countries";
 
 export default function RegionSelector({ onSelect }) {
-  const [selected, setSelected] = useState(countries.find(c => c.code === "US"));
+  const [selected, setSelected] = useState(countries.find(c => c.code === "REGION"));
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   
   useEffect(() => {
-    // Set initial jurisdiction
-    if (onSelect && selected) {
-      onSelect(selected.code);
-    }
+    // Don't set initial jurisdiction - require user selection
+    window.selectedJurisdiction = null;
   }, []);
   const dropdownRef = useRef(null);
   
@@ -37,6 +35,10 @@ export default function RegionSelector({ onSelect }) {
     
     // Skip jurisdiction update if "Region" is selected
     if (country.code === "REGION") {
+      window.selectedJurisdiction = null;
+      if (onSelect) {
+        onSelect(null);
+      }
       return;
     }
     
@@ -46,11 +48,12 @@ export default function RegionSelector({ onSelect }) {
     const newUrl = `${window.location.pathname}?${params.toString()}`;
     window.history.pushState({}, '', newUrl);
     
-    // Call parent callback if provided
+    // Call parent callback with country name as jurisdiction
     if (onSelect) {
-      const jurisdiction = `${country.code} Federal`;
+      const jurisdiction = country.name;
       onSelect(jurisdiction);
       window.selectedJurisdiction = jurisdiction;
+      console.log('Jurisdiction set to:', jurisdiction);
     }
   };
 
@@ -61,7 +64,7 @@ export default function RegionSelector({ onSelect }) {
         style={{ 
         width: "400px",
         position: "absolute",
-        top: "-105px",
+        top: "-97px",
         left: "50%",
         transform: "translateX(-50%)", // Center horizontally
         zIndex: 9999
@@ -73,36 +76,44 @@ export default function RegionSelector({ onSelect }) {
         type="button"
         style={{
           width: "100%",
-          padding: "10px 16px",
-          background: "white",
-          border: "2px solid #eee",
-          borderRadius: "8px",
+          padding: "13px 23px",
+          background: "#ffffff",
+          border: "2px solid #d1d5db",
+          borderRadius: "12px",
           display: "flex",
           alignItems: "center",
-          gap: "10px",
+          gap: "8px",
           cursor: "pointer",
-          transition: "all 0.2s",
+          transition: "all 0.3s",
           position: "relative",
-          fontSize: "15px",
-          fontWeight: "500",
-          color: "#333",
-          hover: {
-            borderColor: "#42c58a",
-            boxShadow: "0 2px 4px rgba(0,0,0,0.1)"
-          }
+          fontSize: "16px",
+          fontWeight: "600",
+          color: "#374151",
+          boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.color = "#ffffff";
+          e.currentTarget.style.borderColor = "#111827";
+          e.currentTarget.style.boxShadow = "0 10px 15px rgba(0, 0, 0, 0.1)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = "#ffffff";
+          e.currentTarget.style.color = "#374151";
+          e.currentTarget.style.borderColor = "#d1d5db";
+          e.currentTarget.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.1)";
         }}
       >
         {selected ? (
           selected.code === "REGION" ? (
-            <span style={{ flex: 1, textAlign: "left", color: "#666" }}>Select Region</span>
+            <span style={{ flex: 1, textAlign: "left", color: "#111827" }}>Select Region</span>
           ) : (
             <>
               <img
                 src={selected.flag}
                 alt={selected.name}
                 style={{
-                  width: "24px",
-                  height: "24px",
+                  width: "35px",
+                  height: "35px",
                   borderRadius: "50%",
                   objectFit: "cover"
                 }}
@@ -135,15 +146,17 @@ export default function RegionSelector({ onSelect }) {
             top: "calc(100% + 8px)",
             left: 0,
             width: "100%",
-            background: "white",
-            border: "2px solid #eee",
+            background: "#ffffff",
+            border: "1px solid #e5e7eb",
             borderRadius: "12px",
-            boxShadow: "0 4px 20px rgba(0, 0, 0, 0.15)",
-            zIndex: 9999
+            boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06)",
+            zIndex: 9999,
+            overflow: "hidden",
+            animation: "dropdownFade 0.2s ease"
           }}
         >
           {/* Search input */}
-          <div style={{ padding: "12px", borderBottom: "2px solid #eee" }}>
+          <div style={{ padding: "12px", borderBottom: "1px solid #e5e7eb" }}>
             <input
               type="text"
               placeholder="Type to search countries..."
@@ -152,14 +165,20 @@ export default function RegionSelector({ onSelect }) {
               style={{
                 width: "100%",
                 padding: "8px 12px",
-                border: "1px solid #ddd",
-                borderRadius: "6px",
+                border: "1px solid #e5e7eb",
+                borderRadius: "8px",
                 fontSize: "14px",
                 outline: "none",
                 transition: "all 0.2s",
               }}
-              onFocus={(e) => e.target.style.borderColor = "#42c58a"}
-              onBlur={(e) => e.target.style.borderColor = "#ddd"}
+              onFocus={(e) => {
+                e.target.style.borderColor = "#42c58a";
+                e.target.style.boxShadow = "0 0 0 3px rgba(66, 197, 138, 0.1)";
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = "#e5e7eb";
+                e.target.style.boxShadow = "none";
+              }}
             />
           </div>
           

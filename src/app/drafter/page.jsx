@@ -127,6 +127,11 @@ export default function DrafterPage() {
       return;
     }
 
+    if (!window.selectedJurisdiction) {
+      alert('⚠️ Please select a region before generating the document.\n\nThe legal requirements vary by jurisdiction, so we need to know which region\'s laws to follow.');
+      return;
+    }
+
     if (isListening) {
       recognitionRef.current.stop();
       setIsListening(false);
@@ -143,7 +148,7 @@ export default function DrafterPage() {
                     mode: 'plain-language',
           formData: {
             prompt: prompt,
-            jurisdiction: window.selectedJurisdiction || 'US Federal'
+            jurisdiction: window.selectedJurisdiction
           },
           userId: 'guest-user'
         })
@@ -357,6 +362,38 @@ export default function DrafterPage() {
           box-shadow: 0 0 0 3px rgba(66, 197, 138, 0.1), 0 0 20px rgba(66, 197, 138, 0.3) !important;
         }
 
+        /* Microphone Modal Animations */
+        @keyframes modalFadeIn {
+          from {
+            opacity: 0;
+            transform: scale(0.9);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+
+        @keyframes ripple {
+          0% {
+            transform: scale(1);
+            opacity: 0.3;
+          }
+          100% {
+            transform: scale(1.5);
+            opacity: 0;
+          }
+        }
+
+        @keyframes waveform {
+          0%, 100% {
+            height: 20px;
+          }
+          50% {
+            height: 50px;
+          }
+        }
+
         /* MOBILE RESPONSIVE STYLES */
         @media (max-width: 768px) {
           .flip-container-wrapper {
@@ -430,9 +467,18 @@ export default function DrafterPage() {
       >
         <button 
           onClick={() => router.push('/')}
-          className="text-gray-600 hover:text-gray-900 transition-colors flex items-center gap-2 text-base md:text-lg font-medium"
+          className="group bg-white hover:bg-gray-900 text-gray-700 hover:text-white border-2 border-gray-300 hover:border-gray-900 transition-all duration-300 flex items-center gap-2 px-4 md:px-5 py-2.5 md:py-3 rounded-xl shadow-lg hover:shadow-xl text-sm md:text-base font-semibold"
         >
-          <span>←</span> <span className="hidden sm:inline">Back to Analyzer</span><span className="sm:hidden">Back</span>
+          <svg 
+            className="w-5 h-5 transition-transform duration-300 group-hover:-translate-x-1" 
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+          </svg>
+          <span className="hidden sm:inline">Back to Analyzer</span>
+          <span className="sm:hidden">Back</span>
         </button>
       </div>
 
@@ -562,12 +608,84 @@ export default function DrafterPage() {
                   </div>
                 </div>
 
-                {/* Listening indicator */}
+                {/* Microphone Listening Modal */}
                 {isListening && (
-                  <div className="absolute -top-10 md:-top-12 left-0 right-0 text-center" style={{ zIndex: 10 }}>
-                    <p className="text-xs md:text-sm text-red-500 animate-pulse">
-                      🎤 Listening...
-                    </p>
+                  <div 
+                    className="fixed inset-0 z-[9999] flex items-center justify-center"
+                    style={{ 
+                      backgroundColor: 'rgba(0, 0, 0, 0.75)',
+                      backdropFilter: 'blur(4px)'
+                    }}
+                  >
+                    <div 
+                      className="bg-white rounded-3xl shadow-2xl p-8 md:p-12 max-w-md mx-4 text-center"
+                      style={{
+                        animation: 'modalFadeIn 0.3s ease-out'
+                      }}
+                    >
+                      {/* Animated Microphone Icon */}
+                      <div className="relative mb-6">
+                        <div 
+                          className="w-24 h-24 md:w-32 md:h-32 mx-auto bg-gradient-to-br from-red-500 to-red-600 rounded-full flex items-center justify-center shadow-lg"
+                          style={{
+                            animation: 'pulse 1.5s ease-in-out infinite'
+                          }}
+                        >
+                          <svg 
+                            className="w-12 h-12 md:w-16 md:h-16 text-white" 
+                            fill="none" 
+                            stroke="currentColor" 
+                            viewBox="0 0 24 24"
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                          </svg>
+                        </div>
+                        
+                        {/* Ripple Effect */}
+                        <div 
+                          className="absolute inset-0 w-24 h-24 md:w-32 md:h-32 mx-auto bg-red-500 rounded-full opacity-20"
+                          style={{
+                            animation: 'ripple 1.5s ease-out infinite'
+                          }}
+                        ></div>
+                      </div>
+
+                      {/* Text */}
+                      <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
+                        Listening...
+                      </h3>
+                      <p className="text-gray-600 mb-6 text-sm md:text-base">
+                        Start speaking to describe your document
+                      </p>
+
+                      {/* Waveform Animation */}
+                      <div className="flex items-center justify-center gap-1 mb-8 h-12">
+                        {[...Array(5)].map((_, i) => (
+                          <div
+                            key={i}
+                            className="w-1 md:w-1.5 bg-red-500 rounded-full"
+                            style={{
+                              animation: `waveform 1s ease-in-out infinite`,
+                              animationDelay: `${i * 0.1}s`,
+                              height: '20px'
+                            }}
+                          ></div>
+                        ))}
+                      </div>
+
+                      {/* Stop Button */}
+                      <button
+                        onClick={toggleListening}
+                        className="px-8 py-3 bg-gray-900 text-white rounded-full font-semibold hover:bg-gray-800 transition-all duration-200 shadow-lg hover:shadow-xl text-sm md:text-base"
+                      >
+                        Stop Recording
+                      </button>
+
+                      {/* Tip */}
+                      <p className="text-xs text-gray-400 mt-4">
+                        Speak clearly and describe the type of legal document you need
+                      </p>
+                    </div>
                   </div>
                 )}
               </div>
