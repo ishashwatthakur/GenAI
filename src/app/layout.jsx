@@ -1,5 +1,5 @@
 import "./globals.css";
-import Chatbot from "../components/chatbot/ChatBot";
+import { AuthProvider } from "../lib/authContext";
 
 export const metadata = {
   title: "Lexi - A Legal Guardian",
@@ -20,7 +20,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <head>
-        {/* Favicon Links - Updated with timestamp trick */}
+        {/* Favicon Links */}
         <link rel="icon" href="/logo.png?v=2" type="image/png" />
         <link rel="apple-touch-icon" href="/logo.png?v=2" />
         <link rel="shortcut icon" href="/logo.png?v=2" />
@@ -33,7 +33,9 @@ export default function RootLayout({ children }) {
         <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet' />
       </head>
       <body className="min-h-screen bg-gray-50 antialiased">
+        <AuthProvider>
           {children}
+        </AuthProvider>
       </body>
     </html>
   );

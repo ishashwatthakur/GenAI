@@ -949,6 +949,170 @@ form .btn:focus-visible {
   opacity: 1;
 }
 
+/* Google Sign-In Button */
+.google-btn-wrapper {
+  margin: 15px 0;
+}
+
+.google-btn {
+  width: 100%;
+  height: 55px;
+  background: white;
+  color: #757575;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 40px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+  font-family: 'Poppins', sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.google-btn:hover {
+  background: #f8f8f8;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-1px);
+}
+
+.google-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.google-icon {
+  width: 20px;
+  height: 20px;
+}
+
+/* Password Strength Indicator */
+.password-strength {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 12px;
+  margin: 15px 0;
+  font-size: 13px;
+}
+
+.password-requirement {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 5px 0;
+}
+
+.password-requirement .valid {
+  color: #10b981;
+  font-weight: bold;
+}
+
+.password-requirement .invalid {
+  color: #ef4444;
+  font-weight: bold;
+}
+
+/* Message Box */
+.message-box {
+  padding: 12px;
+  border-radius: 10px;
+  margin: 15px 0;
+  font-size: 14px;
+  text-align: center;
+  font-weight: 500;
+}
+
+.message-box.success {
+  background: rgba(16, 185, 129, 0.2);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.message-box.error {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+/* Forgot Password Link */
+.forgot-link {
+  color: rgba(212, 165, 116, 0.8) !important;
+  font-size: 13px !important;
+  text-decoration: none;
+  font-weight: 500;
+  transition: 0.3s;
+}
+
+.forgot-link:hover {
+  color: rgba(245, 222, 179, 0.9) !important;
+  text-decoration: underline;
+}
+
+/* Disabled button state */
+form .btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+form .btn:disabled:hover {
+  transform: none !important;
+}
+
+/* Improve form spacing and alignment */
+.form-box form {
+  display: flex;
+  flex-direction: column;
+}
+
+.linkTxt p {
+  margin: 8px 0;
+  line-height: 1.6;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .wrapper {
+    width: 90%;
+    max-width: 400px;
+    height: auto;
+    min-height: 550px;
+  }
+
+  .wrapper .form-box {
+    width: 100%;
+    padding: 40px 30px !important;
+  }
+
+  .wrapper .info-text {
+    display: none;
+  }
+
+  .form-box h2.title {
+    font-size: 32px;
+  }
+
+  .input-box input {
+    font-size: 16px;
+  }
+
+  form .btn {
+    height: 50px;
+    font-size: 16px;
+  }
+
+  .google-btn {
+    height: 50px;
+    font-size: 14px;
+  }
+}
+
 /* Update background to website colors */
 .auth-container {
   display: flex;
